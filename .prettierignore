@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+
+# Package manager
+.pnpm-store
+
+# Next.js
+.next
+out
+
+# Build
+dist
+build
+
+# Coverage
+coverage
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations
+
+# Generated files
+*.generated.*
+generated
+
+# AI / Docs
+.agents
+
+# Lock files (optional)
+# package-lock.json
+# yarn.lock
+# bun.lockb
