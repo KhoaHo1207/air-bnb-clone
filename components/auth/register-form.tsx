@@ -72,8 +72,8 @@ export function RegisterForm() {
   return (
     <main className="mx-auto flex min-h-[88vh] max-w-5xl items-center px-4 md:px-8">
       <section className="bg-surface border-ink-200 grid w-full overflow-hidden rounded-xl border shadow-sm md:grid-cols-2">
-        <div className="from-brand-50 to-brand-100 bg-linear-to-br via-white p-8 md:p-10">
-          <p className="text-brand-600 text-xs font-semibold tracking-[0.16rem] uppercase">
+        <div className="from-brand-50 to-brand-100 dark:from-brand-700/25 dark:via-surface dark:to-brand-600/15 bg-linear-to-br via-white p-8 md:p-10">
+          <p className="text-brand-600 dark:text-brand-400 text-xs font-semibold tracking-[0.16rem] uppercase">
             Join StayScape
           </p>
 
@@ -88,17 +88,17 @@ export function RegisterForm() {
 
           <div className="text-ink-700 mt-8 space-y-3 text-sm">
             <p className="flex items-center gap-2">
-              <Compass className="text-brand-500 size-4" />
+              <Compass className="text-brand-500 dark:text-brand-400 size-4" />
               Discover stays tailored to your plans
             </p>
 
             <p className="flex items-center gap-2">
-              <HeartHandshake className="text-brand-500 size-4" />
+              <HeartHandshake className="text-brand-500 dark:text-brand-400 size-4" />
               Book with trusted hosts worldwide
             </p>
 
             <p className="flex items-center gap-2">
-              <KeyRound className="text-brand-500 size-4" />
+              <KeyRound className="text-brand-500 dark:text-brand-400 size-4" />
               Switch between guest and host anytime
             </p>
           </div>
@@ -270,7 +270,7 @@ export function RegisterForm() {
           <Button
             type="button"
             variant="outline"
-            className="hover:bg-ink-50 w-full bg-white py-5 shadow-xs"
+            className="border-ink-200 bg-surface text-ink-800 hover:bg-ink-50 dark:hover:bg-ink-100 w-full py-5 shadow-xs"
             onClick={() => signIn("google", { callbackUrl })}
             disabled={form.formState.isSubmitting}
           >
@@ -282,7 +282,7 @@ export function RegisterForm() {
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-brand-600 hover:text-brand-700 font-semibold"
+              className="text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-semibold"
             >
               Sign in
             </Link>

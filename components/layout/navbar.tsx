@@ -3,6 +3,7 @@ import { House } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import AuthButtons from "@/components/auth-button";
 import { prisma } from "@/lib/prisma";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export async function Navbar() {
   const user = await getCurrentUser();
@@ -30,6 +31,8 @@ export async function Navbar() {
           </Link>
 
           <AuthButtons user={user} hostCtaLabel={hostCtaLabel} />
+
+          <ModeToggle />
         </div>
       </nav>
     </header>
