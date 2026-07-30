@@ -32,8 +32,6 @@ export type ListingCardData = {
   rating: number;
   price: number;
   maxGuests: number;
-  availableDates: string[];
-  isExternal: boolean;
 };
 
 export type CityListingGroup = {

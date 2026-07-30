@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import { ListingCard } from "@/components/listings/listing-card";
+import { ListingCard } from "@/components/listing/listing-card";
 import type { CityListingGroup, ListingCardData } from "@/types/listing";
 
 type ListingSectionsProps = {

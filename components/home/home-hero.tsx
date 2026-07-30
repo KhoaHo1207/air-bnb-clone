@@ -1,4 +1,4 @@
-import HomeSearchBar from "@/components/home-search-bar";
+import HomeSearchBar from "@/components/home/home-search-bar";
 import { CategoryNav } from "@/components/home/category-nav";
 import type { HomeSearchParams } from "@/types/listing";
 

@@ -6,9 +6,7 @@ export function getSafeCallbackUrl(requested: string | null | undefined) {
 }
 
 export const PROTECTED_PATH_PREFIXES = [
-  "/trips",
-  "/reservations",
-  "/favorites",
+  "/bookings",
   "/host",
   "/account",
 ] as const;

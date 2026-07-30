@@ -1,10 +1,9 @@
 import { format } from "date-fns";
-import { fetchDemoProperties } from "@/lib/demo-properties";
-import {
-  HOME_CATEGORY_LABELS,
-  type CityListingGroup,
-  type HomeSearchParams,
-  type ListingCardData,
+import { prisma } from "@/lib/prisma";
+import type {
+  CityListingGroup,
+  HomeSearchParams,
+  ListingCardData,
 } from "@/types/listing";
 
 function groupByCity(cards: ListingCardData[]): CityListingGroup[] {
@@ -18,53 +17,6 @@ function groupByCity(cards: ListingCardData[]): CityListingGroup[] {
     city,
     items,
   }));
-}
-
-export function normalizeUsCity(location: string) {
-  const lower = location.toLowerCase();
-  if (lower.includes("new york")) return "New York, United States";
-  if (lower.includes("los angeles")) return "Los Angeles, United States";
-  if (lower.includes("miami")) return "Miami, United States";
-  if (lower.includes("chicago")) return "Chicago, United States";
-  if (lower.includes("san francisco")) return "San Francisco, United States";
-  if (lower.includes("seattle")) return "Seattle, United States";
-  if (lower.includes("boston")) return "Boston, United States";
-  return "United States";
-}
-
-function buildDateRangeInclusive(start: Date, end: Date) {
-  const dates: string[] = [];
-  const cursor = new Date(start);
-  while (cursor <= end) {
-    dates.push(cursor.toISOString().slice(0, 10));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return dates;
-}
-
-export function isRangeAvailable(
-  availableDates: string[],
-  checkIn?: string,
-  checkOut?: string,
-) {
-  if (!checkIn || !checkOut) return true;
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
-  if (
-    Number.isNaN(start.getTime()) ||
-    Number.isNaN(end.getTime()) ||
-    end < start
-  ) {
-    return true;
-  }
-  const requested = buildDateRangeInclusive(start, end);
-  if (availableDates.length === 0) return true;
-  const mdSet = new Set(
-    availableDates
-      .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
-      .map((d) => d.slice(5)),
-  );
-  return requested.every((d) => mdSet.has(d.slice(5)));
 }
 
 export function formatDateRange(checkIn?: string, checkOut?: string) {
@@ -120,6 +72,25 @@ function formatGuestsLabel(params: HomeSearchParams, requestedGuests: number) {
     : `${requestedGuests} guest${requestedGuests > 1 ? "s" : ""}`;
 }
 
+function parseDateBound(value?: string) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isListingAvailable(
+  reservations: Array<{ startDate: Date; endDate: Date }>,
+  checkIn?: string,
+  checkOut?: string,
+) {
+  const start = parseDateBound(checkIn);
+  const end = parseDateBound(checkOut);
+  if (!start || !end || end <= start) return true;
+  return !reservations.some(
+    (reservation) => reservation.startDate < end && reservation.endDate > start,
+  );
+}
+
 export async function getHomeListings(params: HomeSearchParams) {
   const hasLocationSearch = Boolean(params.location?.trim());
   const hasAnyFilter = Boolean(
@@ -133,38 +104,55 @@ export async function getHomeListings(params: HomeSearchParams) {
     params.infants?.trim(),
   );
 
-  const demoProperties = await fetchDemoProperties();
-  const allCards: ListingCardData[] = demoProperties.map((property, index) => ({
-    id: property.id,
-    title: property.title,
-    image: property.image,
-    city: normalizeUsCity(property.city),
-    category:
-      HOME_CATEGORY_LABELS[index % HOME_CATEGORY_LABELS.length] ?? "Trending",
-    hostName: property.hostName,
-    rating: property.rating,
-    price: property.pricePerNight,
-    maxGuests: property.maxGuests,
-    availableDates: property.availableDates,
-    isExternal: true,
-  }));
-
   const requestedGuests = getRequestedGuests(params);
-  const unifiedCards = allCards.filter((card) => {
-    const byLocation = params.location
-      ? card.city.toLowerCase().includes(params.location.toLowerCase())
-      : true;
-    const byCategory = params.category
-      ? card.category.toLowerCase() === params.category.toLowerCase()
-      : true;
-    const byGuests = card.maxGuests >= requestedGuests;
-    const byAvailability = isRangeAvailable(
-      card.availableDates,
-      params.checkIn,
-      params.checkOut,
-    );
-    return byLocation && byCategory && byGuests && byAvailability;
+  const location = params.location?.trim();
+  const category = params.category?.trim();
+
+  const dbListings = await prisma.listing.findMany({
+    where: {
+      ...(location
+        ? {
+            locationValue: {
+              contains: location,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      ...(category
+        ? {
+            category: {
+              equals: category,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      guestCount: { gte: requestedGuests },
+    },
+    include: {
+      user: { select: { name: true } },
+      reservations: {
+        select: { startDate: true, endDate: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 60,
   });
+
+  const unifiedCards: ListingCardData[] = dbListings
+    .filter((listing) =>
+      isListingAvailable(listing.reservations, params.checkIn, params.checkOut),
+    )
+    .map((listing) => ({
+      id: listing.id,
+      title: listing.title,
+      image: listing.imageSrc,
+      city: listing.locationValue,
+      category: listing.category,
+      hostName: listing.user?.name ?? "Host",
+      rating: 4.9,
+      price: listing.pricePerNight,
+      maxGuests: listing.guestCount,
+    }));
 
   const limitedCards = unifiedCards.slice(0, 20);
   const groupedCards = groupByCity(limitedCards).slice(0, 8);
@@ -177,7 +165,7 @@ export async function getHomeListings(params: HomeSearchParams) {
     hasLocationSearch,
     hasAnyFilter,
     listingQuery,
-    locationLabel: params.location?.trim() || "Anywhere",
+    locationLabel: location || "Anywhere",
     dateLabel: formatDateRange(params.checkIn, params.checkOut),
     guestsLabel: formatGuestsLabel(params, requestedGuests),
   };
