@@ -20,7 +20,8 @@ export const metadata: Metadata = {
     default: "StayScape",
     template: "%s | StayScape",
   },
-  description: "Find and book stays across top destinations.",
+  description:
+    "Book curated stays with a modern, professional booking experience.",
 };
 
 export default function RootLayout({
