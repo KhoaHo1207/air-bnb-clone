@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { House } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
-import AuthButtons from "@/components/auth-button";
+import AuthButtons from "@/components/layout/auth-button";
 import { prisma } from "@/lib/prisma";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 
 export async function Navbar() {
   const user = await getCurrentUser();

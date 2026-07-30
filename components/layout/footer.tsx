@@ -12,7 +12,7 @@ export function Footer() {
           </p>
           <p className="text-ink-500 mt-5 inline-flex items-center gap-1 text-xs">
             <Users className="h-3.5 w-3.5" />
-            Powered by curated sample listing data focused on US destinations
+            Powered by live listing data from your StayScape database
           </p>
         </div>
         <div>
